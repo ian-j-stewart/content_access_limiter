@@ -1,0 +1,19 @@
+# Drupal specific
+*.info.yml
+*.services.yml
+*.routing.yml
+*.schema.yml
+*.install
+*.module
+*.php
+*.md
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db 
