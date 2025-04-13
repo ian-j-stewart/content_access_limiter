@@ -1,0 +1,33 @@
+content_access_limiter.settings:
+  path: "/admin/config/content-access-limiter"
+  defaults:
+    _form: "\\Drupal\\content_access_limiter\\Form\\LimitSettingsForm"
+    _title: "Content Access Limits"
+  requirements:
+    _permission: "administer site configuration"
+
+content_access_limiter.report:
+  path: "/admin/reports/content-access-limiter"
+  defaults:
+    _controller: "\\Drupal\\content_access_limiter\\Controller\\ReportController::generateReport"
+    _title: "Content Access Report"
+  requirements:
+    _permission: "administer site configuration"
+
+content_access_limiter.reset_count:
+  path: "/admin/reports/content-access-limiter/reset/{uid}"
+  defaults:
+    _controller: "\\Drupal\\content_access_limiter\\Controller\\ReportController::resetCount"
+    _title: "Reset Access Count"
+  requirements:
+    _permission: "administer site configuration"
+  options:
+    _admin_route: TRUE
+
+content_access_limiter.limit_page:
+  path: "/access-limit-reached"
+  defaults:
+    _controller: "\\Drupal\\content_access_limiter\\Controller\\LimitReachedController::content"
+    _title: "Access limit reached"
+  requirements:
+    _access: "TRUE"

@@ -1,12 +1,3 @@
-# Drupal specific
-*.info.yml
-*.services.yml
-*.routing.yml
-*.schema.yml
-*.install
-*.module
-*.php
-*.md
 
 # IDE specific
 .idea/

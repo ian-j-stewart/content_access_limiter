@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the content_access_limiter module.
+ */
+
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_install().
+ */
+function content_access_limiter_install() {
+  $schema = Database::getConnection()->schema();
+  $table = 'content_access_limiter_access_log';
+
+  // Create the access log table if it doesn't exist.
+  if (!$schema->tableExists($table)) {
+    $schema->createTable($table, [
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'not null' => TRUE,
+          'description' => 'Primary key',
+        ],
+        'uid' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'User ID',
+        ],
+        'nid' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'Node ID',
+        ],
+        'access_time' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'Unix timestamp of access',
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'user_access' => ['uid', 'access_time'],
+        'node_access' => ['nid', 'access_time'],
+      ],
+    ]);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function content_access_limiter_uninstall() {
+  $schema = Database::getConnection()->schema();
+  $table = 'content_access_limiter_access_log';
+
+  // Remove the access log table.
+  if ($schema->tableExists($table)) {
+    $schema->dropTable($table);
+  }
+}

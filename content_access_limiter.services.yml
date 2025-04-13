@@ -1,0 +1,14 @@
+services:
+  content_access_limiter.access_tracker:
+    class: Drupal\content_access_limiter\AccessTracker
+    arguments: ['@database', '@current_user']
+
+  content_access_limiter.node_view_subscriber:
+    class: Drupal\content_access_limiter\EventSubscriber\NodeViewSubscriber
+    arguments: ['@content_access_limiter.access_limiter', '@current_route_match']
+    tags:
+      - { name: event_subscriber }
+
+  content_access_limiter.access_limiter:
+    class: Drupal\content_access_limiter\Access\AccessLimiterService
+    arguments: ['@database', '@config.factory']

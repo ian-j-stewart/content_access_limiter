@@ -1,0 +1,28 @@
+content_access_limiter.access_log:
+  description: 'Stores content access logs for tracking user access limits.'
+  fields:
+    id:
+      type: serial
+      not null: true
+      description: 'Primary key'
+    uid:
+      type: int
+      not null: true
+      description: 'User ID'
+    nid:
+      type: int
+      not null: true
+      description: 'Node ID'
+    access_time:
+      type: int
+      not null: true
+      description: 'Unix timestamp of access'
+  primary key:
+    - id
+  indexes:
+    user_access:
+      - uid
+      - access_time
+    node_access:
+      - nid
+      - access_time 

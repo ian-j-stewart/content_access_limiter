@@ -1,0 +1,12 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function content_access_limiter_help($route_name, RouteMatchInterface $route_match) {
+  if ($route_name === 'content_access_limiter.settings') {
+    return t('Set access limits for content types. Users will be redirected when exceeding the daily limit.');
+  }
+}
