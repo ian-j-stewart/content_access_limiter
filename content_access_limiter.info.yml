@@ -1,7 +1,9 @@
-name: 'Content Access Limiter'
+name: Content Access Limiter
 type: module
-description: 'Limits user access to content of a given type with daily view limits.'
-core_version_requirement: ^9 || ^10
+description: 'Limits the number of content items users can access per day.'
 package: Custom
+core_version_requirement: ^9 || ^10
 dependencies:
+  - drupal:user
   - drupal:node
+  - drupal:system

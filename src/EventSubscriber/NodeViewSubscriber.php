@@ -9,6 +9,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Drupal\node\NodeInterface;
 
 /**
  * Event subscriber to check content access limits.
@@ -58,15 +59,17 @@ class NodeViewSubscriber implements EventSubscriberInterface {
    *   The request event.
    */
   public function onRequest(RequestEvent $event) {
-    $route = $this->routeMatch->getRouteName();
-    if ($route === 'entity.node.canonical') {
+    $request = $event->getRequest();
+    $route = $this->routeMatch->getRouteObject();
+
+    if ($route && $route->getPath() === '/node/{node}') {
       $node = $this->routeMatch->getParameter('node');
-      if ($node) {
+      if ($node instanceof NodeInterface) {
         $account = \Drupal::currentUser();
-        $result = $this->accessLimiter->checkAccess($node, $account);
-        if ($result->isForbidden()) {
-          $url = Url::fromRoute('content_access_limiter.limit_page')->toString();
-          $response = new RedirectResponse($url);
+        $access = $this->accessLimiter->checkAccess($account, $node);
+        if ($access->isForbidden()) {
+          $url = Url::fromRoute('content_access_limiter.limit_page');
+          $response = new RedirectResponse($url->toString());
           $event->setResponse($response);
         }
       }

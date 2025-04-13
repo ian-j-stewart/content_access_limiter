@@ -75,7 +75,56 @@ class LimitSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('enabled_types') ?? [],
     ];
 
+    $form['rate_limiting'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Rate Limiting'),
+      '#description' => $this->t('Configure rate limiting to prevent abuse.'),
+    ];
+
+    $form['rate_limiting']['flood'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Rate Limit Settings'),
+      '#open' => TRUE,
+    ];
+
+    $form['rate_limiting']['flood']['limit'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Requests per Window'),
+      '#description' => $this->t('Maximum number of requests allowed per time window.'),
+      '#default_value' => $config->get('flood.limit') ?? 10,
+      '#min' => 1,
+      '#required' => TRUE,
+    ];
+
+    $form['rate_limiting']['flood']['window'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Time Window (seconds)'),
+      '#description' => $this->t('Time window in seconds for rate limiting.'),
+      '#default_value' => $config->get('flood.window') ?? 3600,
+      '#min' => 1,
+      '#required' => TRUE,
+    ];
+
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    // Validate rate limiting settings.
+    $limit = $form_state->getValue('limit');
+    $window = $form_state->getValue('window');
+
+    if ($limit <= 0) {
+      $form_state->setErrorByName('limit', $this->t('Limit must be greater than 0.'));
+    }
+
+    if ($window <= 0) {
+      $form_state->setErrorByName('window', $this->t('Window must be greater than 0.'));
+    }
   }
 
   /**
@@ -86,6 +135,8 @@ class LimitSettingsForm extends ConfigFormBase {
       ->set('daily_limit', $form_state->getValue('daily_limit'))
       ->set('bypass_roles', array_filter($form_state->getValue('bypass_roles')))
       ->set('enabled_types', array_filter($form_state->getValue('enabled_types')))
+      ->set('flood.limit', $form_state->getValue('limit'))
+      ->set('flood.window', $form_state->getValue('window'))
       ->save();
 
     parent::submitForm($form, $form_state);

@@ -1,0 +1,14 @@
+administer content access limits:
+  title: 'Administer content access limits'
+  description: 'Configure content access limits and bypass roles.'
+  restrict access: TRUE
+
+view content access reports:
+  title: 'View content access reports'
+  description: 'View content access statistics and reports.'
+  restrict access: TRUE
+
+reset content access counts:
+  title: 'Reset content access counts'
+  description: 'Reset user access counts in the access limiter.'
+  restrict access: TRUE 

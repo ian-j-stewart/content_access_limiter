@@ -1,28 +1,57 @@
-content_access_limiter.access_log:
-  description: 'Stores content access logs for tracking user access limits.'
+content_access_limiter_access_log:
+  description: 'Stores content access logs.'
   fields:
     id:
       type: serial
       not null: true
-      description: 'Primary key'
+      description: 'Primary key.'
     uid:
       type: int
       not null: true
-      description: 'User ID'
+      description: 'The user ID.'
     nid:
       type: int
       not null: true
-      description: 'Node ID'
+      description: 'The node ID.'
     access_time:
       type: int
       not null: true
-      description: 'Unix timestamp of access'
+      description: 'The timestamp of the access.'
   primary key:
     - id
   indexes:
-    user_access:
+    uid:
       - uid
-      - access_time
-    node_access:
+    nid:
       - nid
-      - access_time 
+    access_time:
+      - access_time
+
+content_access_limiter_reset_log:
+  description: 'Stores access count reset logs.'
+  fields:
+    id:
+      type: serial
+      not null: true
+      description: 'Primary key.'
+    uid:
+      type: int
+      not null: true
+      description: 'The user ID whose count was reset.'
+    reset_by:
+      type: int
+      not null: true
+      description: 'The user ID who performed the reset.'
+    reset_time:
+      type: int
+      not null: true
+      description: 'The timestamp of the reset.'
+  primary key:
+    - id
+  indexes:
+    uid:
+      - uid
+    reset_by:
+      - reset_by
+    reset_time:
+      - reset_time 

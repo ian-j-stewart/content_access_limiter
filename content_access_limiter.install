@@ -12,37 +12,71 @@ use Drupal\Core\Database\Database;
  */
 function content_access_limiter_install() {
   $schema = Database::getConnection()->schema();
-  $table = 'content_access_limiter_access_log';
-
-  // Create the access log table if it doesn't exist.
-  if (!$schema->tableExists($table)) {
-    $schema->createTable($table, [
+  
+  // Create access log table if it doesn't exist.
+  if (!$schema->tableExists('content_access_limiter_access_log')) {
+    $schema->createTable('content_access_limiter_access_log', [
       'fields' => [
         'id' => [
           'type' => 'serial',
           'not null' => TRUE,
-          'description' => 'Primary key',
+          'description' => 'Primary key.',
         ],
         'uid' => [
           'type' => 'int',
           'not null' => TRUE,
-          'description' => 'User ID',
+          'description' => 'The user ID.',
         ],
         'nid' => [
           'type' => 'int',
           'not null' => TRUE,
-          'description' => 'Node ID',
+          'description' => 'The node ID.',
         ],
         'access_time' => [
           'type' => 'int',
           'not null' => TRUE,
-          'description' => 'Unix timestamp of access',
+          'description' => 'The timestamp of the access.',
         ],
       ],
       'primary key' => ['id'],
       'indexes' => [
-        'user_access' => ['uid', 'access_time'],
-        'node_access' => ['nid', 'access_time'],
+        'uid' => ['uid'],
+        'nid' => ['nid'],
+        'access_time' => ['access_time'],
+      ],
+    ]);
+  }
+
+  // Create reset log table if it doesn't exist.
+  if (!$schema->tableExists('content_access_limiter_reset_log')) {
+    $schema->createTable('content_access_limiter_reset_log', [
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'not null' => TRUE,
+          'description' => 'Primary key.',
+        ],
+        'uid' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'The user ID whose count was reset.',
+        ],
+        'reset_by' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'The user ID who performed the reset.',
+        ],
+        'reset_time' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'description' => 'The timestamp of the reset.',
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'uid' => ['uid'],
+        'reset_by' => ['reset_by'],
+        'reset_time' => ['reset_time'],
       ],
     ]);
   }
@@ -53,10 +87,14 @@ function content_access_limiter_install() {
  */
 function content_access_limiter_uninstall() {
   $schema = Database::getConnection()->schema();
-  $table = 'content_access_limiter_access_log';
-
-  // Remove the access log table.
-  if ($schema->tableExists($table)) {
-    $schema->dropTable($table);
+  
+  // Drop the access log table.
+  if ($schema->tableExists('content_access_limiter_access_log')) {
+    $schema->dropTable('content_access_limiter_access_log');
+  }
+  
+  // Drop the reset log table.
+  if ($schema->tableExists('content_access_limiter_reset_log')) {
+    $schema->dropTable('content_access_limiter_reset_log');
   }
 }

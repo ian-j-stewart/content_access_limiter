@@ -8,6 +8,9 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Controller for generating content access reports.
@@ -84,7 +87,7 @@ class ReportController extends ControllerBase {
         '@time' => \Drupal::service('date.formatter')->formatTimeDiffSince($last_access),
       ]) : $this->t('Never');
 
-      // Create reset button.
+      // Create reset button with CSRF token.
       $reset_url = Url::fromRoute('content_access_limiter.reset_count', ['uid' => $user->id()]);
       $reset_link = [
         '#type' => 'link',
@@ -125,19 +128,47 @@ class ReportController extends ControllerBase {
    *
    * @param int $uid
    *   The user ID to reset.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The current request.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirects back to the report page.
    */
-  public function resetCount($uid) {
+  public function resetCount($uid, Request $request) {
+    // Verify user exists.
+    $user = User::load($uid);
+    if (!$user) {
+      $this->messenger()->addError($this->t('User not found.'));
+      \Drupal::logger('content_access_limiter')->warning('Attempt to reset non-existent user @uid by user @current_uid', [
+        '@uid' => $uid,
+        '@current_uid' => $this->currentUser()->id(),
+      ]);
+      return $this->redirect('content_access_limiter.report');
+    }
+
+    // Delete today's access logs.
     $today = strtotime('today');
     $this->database->delete('content_access_limiter_access_log')
       ->condition('uid', $uid)
       ->condition('access_time', $today, '>=')
       ->execute();
 
-    $this->messenger()->addStatus($this->t('Access count has been reset for user @uid.', [
-      '@uid' => $uid,
+    // Log the reset action.
+    $this->database->insert('content_access_limiter_reset_log')
+      ->fields([
+        'uid' => $uid,
+        'reset_by' => $this->currentUser()->id(),
+        'reset_time' => \Drupal::time()->getRequestTime(),
+      ])
+      ->execute();
+
+    \Drupal::logger('content_access_limiter')->info('Access count reset for user @target_name by user @current_name', [
+      '@target_name' => $user->getDisplayName(),
+      '@current_name' => $this->currentUser()->getDisplayName(),
+    ]);
+
+    $this->messenger()->addStatus($this->t('Access count has been reset for user @name.', [
+      '@name' => $user->getDisplayName(),
     ]));
 
     return $this->redirect('content_access_limiter.report');
